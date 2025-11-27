@@ -11,6 +11,7 @@ job "reporting-worker" {
       }
     }
 
+    # Consul service registration + health check
     service {
       name = "reporting-worker"
       port = "http"
@@ -24,21 +25,18 @@ job "reporting-worker" {
       }
     }
 
-    # Reporting worker doesn't need Vault for now, but you could
-    # add a vault {} block similar to orders-api if needed.
-
     task "reporting-worker" {
       driver = "docker"
 
       config {
-        image = "your-registry/reporting-worker:latest"
+        image = "reporting-worker:dev"
         ports = ["http"]
       }
 
       env {
         PORT = "8081"
-        # Optionally, override CONSUL_HTTP_ADDR if needed.
-        # CONSUL_HTTP_ADDR = "http://consul.service.consul:8500"
+        # If needed, you can be explicit:
+        # CONSUL_HTTP_ADDR = "http://127.0.0.1:8500"
       }
 
       resources {

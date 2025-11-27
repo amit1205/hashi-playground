@@ -1,13 +1,16 @@
 package main
 
 import (
+    "context"
     "encoding/json"
     "fmt"
     "log"
     "net/http"
     "os"
+    "time"
 
     consulapi "github.com/hashicorp/consul/api"
+    vaultapi "github.com/hashicorp/vault/api"
 )
 
 type ConfigResponse struct {
@@ -35,12 +38,17 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func configHandler(w http.ResponseWriter, r *http.Request) {
-    appSecret := os.Getenv("APP_SECRET") // injected via Vault/Template
+    // 1) Vault: read APP_SECRET from KV v2 at secret/orders-api
+    appSecret, err := readVaultSecret()
+    if err != nil {
+        log.Printf("error reading Vault secret: %v", err)
+        appSecret = "ERROR_FROM_VAULT"
+    }
     if appSecret == "" {
         appSecret = "APP_SECRET not set"
     }
 
-    // Read message from Consul KV
+    // 2) Consul KV: read message
     message := "default message"
     if msg, err := readConsulKV("config/orders/message"); err == nil && msg != "" {
         message = msg
@@ -57,7 +65,6 @@ func configHandler(w http.ResponseWriter, r *http.Request) {
 
 func readConsulKV(key string) (string, error) {
     cfg := consulapi.DefaultConfig()
-    // In-cluster, CONSUL_HTTP_ADDR can be set by Nomad/Env if not default.
     client, err := consulapi.NewClient(cfg)
     if err != nil {
         return "", err
@@ -72,6 +79,48 @@ func readConsulKV(key string) (string, error) {
         return "", nil
     }
     return string(pair.Value), nil
+}
+
+func readVaultSecret() (string, error) {
+    addr := getEnv("VAULT_ADDR", "http://127.0.0.1:8200")
+    token := os.Getenv("VAULT_TOKEN")
+    if token == "" {
+        return "", fmt.Errorf("VAULT_TOKEN not set")
+    }
+
+    cfg := vaultapi.DefaultConfig()
+    cfg.Address = addr
+
+    client, err := vaultapi.NewClient(cfg)
+    if err != nil {
+        return "", fmt.Errorf("failed to create Vault client: %w", err)
+    }
+    client.SetToken(token)
+
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    // KV v2 at mount "secret" -> logical path: secret/data/orders-api
+    kv := client.KVv2("secret")
+    secret, err := kv.Get(ctx, "orders-api")
+    if err != nil {
+        return "", fmt.Errorf("failed to read KV v2 secret: %w", err)
+    }
+    if secret == nil || secret.Data == nil {
+        return "", fmt.Errorf("secret or data nil")
+    }
+
+    raw, ok := secret.Data["APP_SECRET"]
+    if !ok {
+        return "", fmt.Errorf("APP_SECRET key not found in Vault data")
+    }
+
+    s, ok := raw.(string)
+    if !ok {
+        return "", fmt.Errorf("APP_SECRET is not a string")
+    }
+
+    return s, nil
 }
 
 func getEnv(key, def string) string {

@@ -11,6 +11,7 @@ job "orders-api" {
       }
     }
 
+    # Consul service registration + health check
     service {
       name = "orders-api"
       port = "http"
@@ -24,29 +25,18 @@ job "orders-api" {
       }
     }
 
-    vault {
-      policies = ["app"]
-    }
-
     task "orders-api" {
       driver = "docker"
 
       config {
-        image = "your-registry/orders-api:latest"
+        image = "orders-api:dev"
         ports = ["http"]
       }
 
       env {
-        PORT = "8080"
-      }
-
-      template {
-        destination = "secrets/env"
-        env         = true
-
-        data = <<EOH
-APP_SECRET="{{ with secret "secret/data/orders-api" }}{{ .Data.data.APP_SECRET }}{{ end }}"
-EOH
+        PORT        = "8080"
+        VAULT_ADDR  = "http://127.0.0.1:8200"
+        VAULT_TOKEN = "root" # DEV ONLY - don't do this in prod
       }
 
       resources {
@@ -56,4 +46,3 @@ EOH
     }
   }
 }
-
