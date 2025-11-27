@@ -38,3 +38,16 @@ consul version
 vault version
 docker version
 
+# End to End Testing Flow
+
+## 1. Start Consul in Dev Mode
+In one terminal:
+```
+consul agent -dev -node=dev-consul -bind=127.0.0.1
+```
+This:
+- Starts a single-node Consul server
+- Listens on `127.0.0.1:8500`
+- Enables a dev keyring and in-memory storage
+You can open the Consul UI:
+- URL: `http://127.0.0.1:8500/ui`
