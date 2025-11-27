@@ -37,6 +37,7 @@ nomad version
 consul version
 vault version
 docker version
+```
 
 # End to End Testing Flow
 
