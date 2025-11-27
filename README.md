@@ -52,3 +52,22 @@ This:
 - Enables a dev keyring and in-memory storage
 You can open the Consul UI:
 - URL: `http://127.0.0.1:8500/ui`
+
+## 2. Start Vault in Dev Mode
+In another terminal:
+```
+vault server -dev -dev-root-token-id=root
+```
+Notes:
+- Vault listens on http://127.0.0.1:8200
+- Dev mode auto-unseals and uses in-memory storage
+- The root token is root (hard-coded with -dev-root-token-id)
+Set environment variables in that terminal:
+```
+export VAULT_ADDR="http://127.0.0.1:8200"
+export VAULT_TOKEN="root"
+```
+Confirm:
+```
+vault status
+```
