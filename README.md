@@ -61,7 +61,7 @@ This demonstrates key HashiStack use cases:
 
 
 
-## 1. Prerequisites
+# 1. Prerequisites
 
 You’ll need the following installed locally:
 
