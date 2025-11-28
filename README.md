@@ -62,6 +62,8 @@ This demonstrates key HashiStack use cases:
 
 ---
 
+![](./assets/images/arch_diagram.png)
+
 # Prerequisites
 
 You’ll need the following installed locally:
