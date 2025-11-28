@@ -19,6 +19,47 @@ This demonstrates key HashiStack use cases:
 - **Vault**: central secret storage + fine-grained policy, Nomad integration (apps do not talk to Vault directly)
 
 ---
+# Diagram
+                             ┌──────────────────────────┐
+                             │        User (curl)       │
+                             │   GET /call-orders       │
+                             └─────────────┬────────────┘
+                                           │
+                                           ▼
+                      ┌─────────────────────────────────────────┐
+                      │        reporting-worker (Nomad)         │
+                      │-----------------------------------------│
+                      │ • Discovers orders-api via Consul       │
+                      │ • Calls http://host.docker.internal:PORT│
+                      │   /config                               │
+                      └─────────────┬───────────────────────────┘
+                                    │ discover + call
+                                    │
+           ┌────────────────────────────────────────────────────────────────┐
+           │                            Consul                              │
+           │----------------------------------------------------------------│
+           │  Service Catalog: orders-api, reporting-worker                 │
+           │  KV: config/orders/message                                     │
+           └───────────┬────────────────────────────────────────────────────┘
+                       │ healthy instance: host.docker.internal:20088
+                       ▼
+              ┌─────────────────────────────────┐
+              │       orders-api (Nomad)        │
+              │---------------------------------│
+              │ • Reads Consul KV (message)     │
+              │ • Reads Vault KV (APP_SECRET)   │
+              │ • /config returns JSON          │
+              └──────────┬──────────────────────┘
+                         │
+       ┌─────────────────┼────────────────────────────────────┐
+       │                 │                                    │
+       ▼                 ▼                                    ▼
+┌────────────────┐  ┌───────────────────┐           ┌──────────────────────┐
+│ Consul KV      │  │ Vault KV v2       │           │   Final JSON returned│
+│ config/orders/*│  │ secret/orders-api │           │ to reporting-worker  │
+└────────────────┘  └───────────────────┘           └──────────────────────┘
+
+
 
 ## 1. Prerequisites
 
