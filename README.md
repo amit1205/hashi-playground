@@ -413,21 +413,29 @@ This confirms:
 - template stanza to render Vault secrets into environment variables
 
 *Consul*
-**Service Discovery**:
-- orders-api and reporting-worker registered as Consul services via Nomad service {} stanzas
-- reporting-worker calls Consul’s health API to discover orders-api
-**Health Catalog**:
-- Nomad’s health checks are visible in the Consul catalog and UI
-**KV Store**:
-- config/orders/message used as configuration for orders-api
+
+*Service Discovery*:
+
+- orders-api and reporting-worker registered as Consul services via Nomad service {} stanzas.
+- reporting-worker calls Consul’s health API to discover orders-api.
+
+*Health Catalog*:
+- Nomad’s health checks are visible in the Consul catalog and UI.
+
+*KV Store*:
+- config/orders/message used as configuration for orders-api.
+
 *Vault*
-**Secrets Management**:
-- secret/orders-api path storing application secret APP_SECRET
+
+*Secrets Management*:
+- secret/orders-api path storing application secret APP_SECRET.
 - KV v2 used with vault kv put secret/orders-api ...
-**Policy / RBAC**:
-- app policy restricts jobs to reading just secret/data/orders-api
-**Nomad Integration**:
-- Nomad uses Vault token + policy to render APP_SECRET into orders-api environment without the app ever calling Vault directly
+
+*Policy / RBAC*:
+- app policy restricts jobs to reading just secret/data/orders-api.
+
+*Nomad Integration*:
+- Nomad uses Vault token + policy to render APP_SECRET into orders-api environment without the app ever calling Vault directly.
 
 
 # 12. Cleanup
