@@ -37,6 +37,7 @@ job "orders-api" {
         PORT        = "8080"
         VAULT_ADDR  = "http://127.0.0.1:8200"
         VAULT_TOKEN = "root" # DEV ONLY - don't do this in prod
+	CONSUL_HTTP_ADDR = "http://host.docker.internal:8500"
       }
 
       resources {

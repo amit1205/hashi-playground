@@ -37,6 +37,7 @@ job "reporting-worker" {
         PORT = "8081"
         # If needed, you can be explicit:
         # CONSUL_HTTP_ADDR = "http://127.0.0.1:8500"
+	CONSUL_HTTP_ADDR = "http://host.docker.internal:8500"
       }
 
       resources {
