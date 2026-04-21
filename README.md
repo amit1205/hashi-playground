@@ -363,6 +363,12 @@ You should see orders-api and reporting-worker.
 
 # 10. Verify Everything End-to-End
 ## 1. Check orders-api Directly
+
+Check the port by running following command:
+```
+nomad job allocs orders-api
+nomad alloc status -verbose <ALLOC_ID>
+```
 From host:
 ```
 curl http://127.0.0.1:18080/health
